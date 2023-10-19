@@ -178,6 +178,14 @@
                 <attribute name="quick_create">0</attribute>
                 <attribute name="default_group_by">planned_date_begin:day</attribute>
             </xpath>
+            <xpath expr="//field[@name='planned_date_begin']" position="attributes">
+                <attribute name="widget">fsm_date</attribute>
+            </xpath>
+            <xpath expr="//i[hasclass('fa-long-arrow-right')]" position="replace"/>
+            <xpath expr="//field[@name='planned_date_end']" position="attributes">
+                <attribute name="widget">fsm_date</attribute>
+                <attribute name="invisible">1</attribute>
+            </xpath>
         </field>
     </record>
 
@@ -608,7 +616,7 @@
         <field name="view_mode">gantt,calendar,map,tree,kanban,pivot,graph,form,activity</field>
         <field name="search_view_id" ref="project_task_view_search_fsm"/>
         <field name="domain">[('is_fsm', '=', True), ('display_project_id', '!=', False)]</field>
-        <field name="context" eval="{'fsm_mode': 1, 'task_nameget_with_hours': 1, 'default_scale': 'week'}"/>
+        <field name="context" eval="{'fsm_mode': 1, 'task_nameget_with_hours': 1, 'default_scale': 'week', 'default_user_ids': False}"/>
         <field name="help" type="html">
             <p class='o_view_nocontent_smiling_face'>
                 No tasks found. Let's create one!
@@ -674,7 +682,7 @@
         <field name="view_mode">gantt,calendar,map,tree,kanban,pivot,graph,activity</field>
         <field name="search_view_id" ref="project_task_view_search_fsm"/>
         <field name="domain">[('is_fsm', '=', True), ('display_project_id', '!=', False)]</field>
-        <field name="context" eval="{'fsm_mode': 1, 'task_nameget_with_hours': 1, 'default_scale': 'week'}"/>
+        <field name="context" eval="{'fsm_mode': 1, 'task_nameget_with_hours': 1, 'default_scale': 'week', 'default_user_ids': False}"/>
         <field name="help" type="html">
             <p class='o_view_nocontent_smiling_face'>
                 No tasks found. Let's create one!

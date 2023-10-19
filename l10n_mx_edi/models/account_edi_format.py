@@ -646,7 +646,7 @@ class AccountEdiFormat(models.Model):
             'payment_account_ord': is_payment_code_emitter_ok and payment_account_ord,
             'receiver_vat_ord': is_payment_code_receiver_ok and move.journal_id.bank_account_id.bank_id.l10n_mx_edi_vat,
             'payment_account_receiver': is_payment_code_receiver_ok and payment_account_receiver,
-            'cfdi_date': move.l10n_mx_edi_post_time.strftime('%Y-%m-%dT%H:%M:%S'),
+            'cfdi_date': (move.l10n_mx_edi_post_time or datetime(move.invoice_date.year, move.invoice_date.month, move.invoice_date.day, 23, 59, 0)).isoformat(),
             'tax_summary': total_taxes_paid,
             'withholding_summary': total_taxes_withheld,
         }
@@ -1113,12 +1113,12 @@ Content-Disposition: form-data; name="xml"; filename="xml"
            <SOAP-ENV:Header/>
            <ns1:Body>
               <ns0:Consulta>
-                 <ns0:expresionImpresa>${data}</ns0:expresionImpresa>
+                 <ns0:expresionImpresa>{data}</ns0:expresionImpresa>
               </ns0:Consulta>
            </ns1:Body>
         </SOAP-ENV:Envelope>"""
         namespace = {'a': 'http://schemas.datacontract.org/2004/07/Sat.Cfdi.Negocio.ConsultaCfdi.Servicio'}
-        params = '?re=%s&amp;rr=%s&amp;tt=%s&amp;id=%s' % (
+        params = "<![CDATA[?re=%s&rr=%s&tt=%s&id=%s]]>" % (
             tools.html_escape(supplier_rfc or ''),
             tools.html_escape(customer_rfc or ''),
             total or 0.0, uuid or '')

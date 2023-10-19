@@ -2023,6 +2023,28 @@ msgstr "Застосовуються податки всередині спіл�
 #. odoo-python
 #: code:addons/account_reports/models/account_report.py:0
 #, python-format
+msgid "Invalid domain formula in expression %r of line %r: %s"
+msgstr "Недійсна формула домену у виразі рядка: %s"
+
+#. module: account_reports
+#. odoo-python
+#: code:addons/account_reports/models/account_report.py:0
+#, python-format
+msgid "Invalid method %r"
+msgstr "Недійсний метод"
+
+#. module: account_reports
+#. odoo-python
+#: code:addons/account_reports/models/account_report.py:0
+#: code:addons/account_reports/models/account_report.py:0
+#, python-format
+msgid "Invalid subformula in expression %r of line %r: %s"
+msgstr "Недійсна підформула у виразі рядка: %s"
+
+#. module: account_reports
+#. odoo-python
+#: code:addons/account_reports/models/account_report.py:0
+#, python-format
 msgid "Invalid token '%s' in account_codes formula '%s'"
 msgstr "Недійсний токен '%s' в account_codes formula '%s'"
 
@@ -3119,6 +3141,15 @@ msgstr "Баланс бухгалтерської книги в Odoo датов�
 #. odoo-python
 #: code:addons/account_reports/models/account_report.py:0
 #, python-format
+msgid ""
+"The company's chart of account does not match the report's chart of "
+"accounts."
+msgstr ""
+
+#. module: account_reports
+#. odoo-python
+#: code:addons/account_reports/models/account_report.py:0
+#, python-format
 msgid "The company's country does not match the report's country."
 msgstr "Країна компанії не відповідає країні звіту."
 
@@ -3571,6 +3602,15 @@ msgstr ""
 " видалення залишкових значень, які впливають на податковий звіт "
 "заблокованого періоду. Для цього вам спочатку потрібно змінити дату "
 "блокування податкової декларації."
+
+#. module: account_reports
+#. odoo-python
+#: code:addons/account_reports/models/account_multicurrency_revaluation_report.py:0
+#, python-format
+msgid "You need to activate more than one currency to access this report."
+msgstr ""
+"Вам потрібно активувати більше ніж одну валюту, щоб отримати доступ до цього"
+" звіту."
 
 #. module: account_reports
 #: model_terms:ir.ui.view,arch_db:account_reports.main_template

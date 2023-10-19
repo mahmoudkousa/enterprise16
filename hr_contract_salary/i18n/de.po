@@ -1509,12 +1509,12 @@ msgstr "Spezifische Werte"
 #. module: hr_contract_salary
 #: model:hr.contract.salary.personal.info,name:hr_contract_salary.hr_contract_salary_personal_info_state_id
 msgid "State"
-msgstr "Bundesland/Region"
+msgstr "Bundesland"
 
 #. module: hr_contract_salary
 #: model:ir.model.fields.selection,name:hr_contract_salary.selection__hr_contract_salary_personal_info__dropdown_selection__state
 msgid "States"
-msgstr "Bundesländer/Regionen"
+msgstr "Bundesländer"
 
 #. module: hr_contract_salary
 #: model:hr.contract.salary.personal.info,name:hr_contract_salary.hr_contract_salary_personal_info_street
@@ -1559,9 +1559,9 @@ msgid ""
 "The benefit is created when the employee signs his contract at the end of "
 "the salary configurator or when the HR manager countersigns the contract."
 msgstr ""
-"Die Leistung entsteht, wenn der Arbeitnehmer seinen Vertrag am Ende des "
-"Gehaltskonfigurators unterzeichnet oder wenn der Personalleiter den Vertrag "
-"gegenzeichnet."
+"Die Leistung entsteht, wenn der Mitarbeiter einen Vertrag am Ende des "
+"Gehaltskonfigurators unterzeichnet oder wenn der Personalverantwortliche den"
+" Vertrag gegenzeichnet."
 
 #. module: hr_contract_salary
 #: model:ir.model.fields,help:hr_contract_salary.field_hr_contract__origin_contract_id

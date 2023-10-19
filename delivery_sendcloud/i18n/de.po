@@ -312,7 +312,7 @@ msgstr "Retourenzusteller"
 #. module: delivery_sendcloud
 #: model:ir.model.fields,field_description:delivery_sendcloud.field_sendcloud_shipping_wizard__return_country_ids
 msgid "Return Countries"
-msgstr "Retourenland"
+msgstr "Retourenländer"
 
 #. module: delivery_sendcloud
 #: model:ir.model.fields,field_description:delivery_sendcloud.field_sendcloud_shipping_wizard__return_max_weight
@@ -456,7 +456,7 @@ msgstr "Etwas ist schiefgelaufen. Bitte versuchen Sie es später erneut!"
 #. module: delivery_sendcloud
 #: model:ir.model,name:delivery_sendcloud.model_stock_package_type
 msgid "Stock package type"
-msgstr "Standardpakettyp"
+msgstr "Typ des Lagerpakets"
 
 #. module: delivery_sendcloud
 #. odoo-python

@@ -3,6 +3,7 @@
 
 from odoo import models, fields, api, _
 from odoo.tools import float_is_zero
+from odoo.exceptions import UserError
 
 from itertools import chain
 
@@ -24,7 +25,10 @@ class MulticurrencyRevaluationReportCustomHandler(models.AbstractModel):
 
     def _custom_options_initializer(self, report, options, previous_options=None):
         super()._custom_options_initializer(report, options, previous_options=previous_options)
-        rates = self.env['res.currency'].search([('active', '=', True)])._get_rates(self.env.company, options.get('date').get('date_to'))
+        active_currencies = self.env['res.currency'].search([('active', '=', True)])
+        if len(active_currencies) < 2:
+            raise UserError(_("You need to activate more than one currency to access this report."))
+        rates = active_currencies._get_rates(self.env.company, options.get('date').get('date_to'))
         # Normalize the rates to the company's currency
         company_rate = rates[self.env.company.currency_id.id]
         for key in rates.keys():
@@ -38,7 +42,7 @@ class MulticurrencyRevaluationReportCustomHandler(models.AbstractModel):
                 'rate': (rates[currency_id.id]
                          if not (previous_options or {}).get('currency_rates', {}).get(str(currency_id.id), {}).get('rate') else
                          float(previous_options['currency_rates'][str(currency_id.id)]['rate'])),
-            } for currency_id in self.env['res.currency'].search([('active', '=', True)])
+            } for currency_id in active_currencies
         }
 
         options['company_currency'] = options['currency_rates'].pop(str(self.env.company.currency_id.id))
@@ -209,6 +213,7 @@ class MulticurrencyRevaluationReportCustomHandler(models.AbstractModel):
                                 )
                            )
                        AND part.max_date <= %s
+                       AND account.account_type NOT IN ('income', 'income_other', 'expense', 'expense_depreciation', 'expense_direct_cost', 'off_balance')
                   GROUP BY aml_id,
                            curr.decimal_places
 
@@ -234,6 +239,7 @@ class MulticurrencyRevaluationReportCustomHandler(models.AbstractModel):
                                 )
                            )
                        AND part.max_date <= %s
+                       AND account.account_type NOT IN ('income', 'income_other', 'expense', 'expense_depreciation', 'expense_direct_cost', 'off_balance')
                   GROUP BY aml_id,
                            curr.decimal_places
                  )
@@ -283,7 +289,6 @@ class MulticurrencyRevaluationReportCustomHandler(models.AbstractModel):
                        account_move_line.id AS aml_id
                   FROM {tables}
              LEFT JOIN amount_residuals_by_aml_id ara ON ara.aml_id = account_move_line.id
-                  JOIN account_journal journal ON account_move_line.journal_id = journal.id
                   JOIN account_account account ON account_move_line.account_id = account.id
                   JOIN res_currency currency ON currency.id = account_move_line.currency_id
                   JOIN custom_currency_table ON custom_currency_table.currency_id = currency.id
@@ -295,12 +300,12 @@ class MulticurrencyRevaluationReportCustomHandler(models.AbstractModel):
                              AND (account_move_line.currency_id != account_move_line.company_currency_id)
                             )
                        )
-                   AND journal.type NOT IN ('bank', 'cash')
                    AND (account_move_line.move_id NOT IN ({select_part_exchange_move_id}))
                    AND {'NOT EXISTS' if line_code == 'to_adjust' else 'EXISTS'} (
                         SELECT * FROM account_account_exclude_res_currency_provision WHERE account_account_id = account_id AND res_currency_id = account_move_line.currency_id
                     )
-                    AND ara IS NULL
+                   AND account.account_type NOT IN ('income', 'income_other', 'expense', 'expense_depreciation', 'expense_direct_cost', 'off_balance')
+                   AND ara IS NULL
 
             ) subquery
 

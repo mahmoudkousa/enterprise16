@@ -391,7 +391,7 @@ var accountReportsWidget = AbstractAction.extend({
                         self._rpc({
                             model: 'account.report.expression',
                             method: 'action_view_carryover_lines',
-                            args: [$(event.target).data('expression-id'), self.report_options],
+                            args: [$(event.target).data('expression-id'), self.report_options, $(event.target).data('column-group-key')],
                             context: self.odoo_context,
                         })
                         .then(function(result){
@@ -1111,8 +1111,7 @@ var accountReportsWidget = AbstractAction.extend({
             line[0].dataset.unfolded = 'True';
             this._add_line_classes();
             return true;
-        }
-        else {
+        } else if ( line.data('expandFunction') ) {
             // Display the total lines (for 'totals below section' option)
             if ($total_lines.length > 0) {
                 $lines_in_dom.removeClass('o_account_reports_filtered_lines');
@@ -1141,6 +1140,8 @@ var accountReportsWidget = AbstractAction.extend({
 
                     self._add_line_classes();
                 });
+        } else {
+            line[0].dataset.unfolded = 'True';
         }
     },
     load_more: function (ev) {

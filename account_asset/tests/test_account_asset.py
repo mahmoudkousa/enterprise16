@@ -1247,38 +1247,70 @@ class TestAccountAsset(TestAccountReportsCommon):
         self.assertEqual(max(self.truck.depreciation_move_ids, key=lambda m: m.date).asset_remaining_value, 0)
         self.assertEqual(max(self.truck.depreciation_move_ids, key=lambda m: m.date).asset_depreciated_value, 7500)
 
-    def test_asset_reverse_original_move(self):
-        """Test the reversal of a move that generated an asset"""
-
-        move_id = self.env['account.move'].create({
-            'ref': 'line1',
-            'line_ids': [
-                (0, 0, {
-                    'account_id': self.company_data['default_account_expense'].id,
-                    'debit': 300,
-                    'name': 'Furniture',
-                }),
-                (0, 0, {
-                    'account_id': self.company_data['default_account_assets'].id,
-                    'credit': 300,
-                }),
-            ]
+    def test_credit_note_out_refund(self):
+        """
+        Test the behaviour of the asset creation when a credit note is created.
+        The asset created from the credit note should be the same as the one created from the invoice
+        with a negative value.
+        """
+        depreciation_account = self.company_data['default_account_liability'].copy()
+        revenue_model = self.env['account.asset'].create({
+            'account_depreciation_id': depreciation_account.id,
+            'account_depreciation_expense_id': self.company_data['default_account_revenue'].id,
+            'journal_id': self.company_data['default_journal_misc'].id,
+            'name': 'Hardware - 5 Years',
+            'asset_type': 'purchase',
+            'method_number': 5,
+            'method_period': '12',
+            'state': 'model',
         })
-        move_id.action_post()
-        move_line_id = move_id.mapped('line_ids').filtered(lambda x: x.debit)
 
-        asset_form = Form(self.env['account.asset'].with_context(asset_type='purchase'))
-        asset_form._values['original_move_line_ids'] = [(6, 0, move_line_id.ids)]
-        asset_form._perform_onchange(['original_move_line_ids'])
-        asset_form.account_depreciation_expense_id = self.company_data['default_account_expense']
+        depreciation_account.write({'create_asset': 'draft', 'asset_model': revenue_model.id})
 
-        asset = asset_form.save()
+        invoice = self.env['account.move'].create({
+            'invoice_date': '2019-07-01',
+            'move_type': 'out_invoice',
+            'partner_id': self.partner_a.id,
+            'invoice_line_ids': [(0, 0, {
+                'name': 'Hardware',
+                'account_id': depreciation_account.id,
+                'price_unit': 5000,
+                'quantity': 1,
+                'tax_ids': False,
+            })],
+        })
 
-        self.assertTrue(asset.name, 'An asset should have been created')
-        reversed_move_id = move_id._reverse_moves()
-        reversed_move_id.action_post()
-        with self.assertRaises(MissingError, msg='The asset should have been deleted'):
-            asset.name
+        invoice.action_post()
+        self.assertTrue(invoice.asset_ids)
+
+        credit_note = invoice._reverse_moves()
+        credit_note.action_post()
+
+        invoice_asset = invoice.asset_ids
+        credit_note_asset = credit_note.asset_ids
+
+        # check if invoice_asset still exists after validate the credit note
+        self.assertTrue(invoice_asset)
+        self.assertTrue(credit_note_asset)
+
+        (invoice_asset + credit_note_asset).validate()
+
+        self.assertRecordValues(credit_note_asset, [
+            {
+                'acquisition_date': invoice_asset.acquisition_date,
+                'book_value': -invoice_asset.book_value,
+                'value_residual': -invoice_asset.value_residual,
+            }
+        ])
+
+        for invoice_asset_move, credit_note_asset_move in zip(invoice_asset.depreciation_move_ids.sorted('date'), credit_note_asset.depreciation_move_ids.sorted('date')):
+            self.assertRecordValues(credit_note_asset_move, [
+                {
+                    'date': invoice_asset_move.date,
+                    'state': invoice_asset_move.state,
+                    'depreciation_value': -invoice_asset_move.depreciation_value,
+                }
+            ])
 
     def test_asset_multiple_assets_from_one_move_line_00(self):
         """ Test the creation of a as many assets as the value of
@@ -1396,13 +1428,13 @@ class TestAccountAsset(TestAccountReportsCommon):
         Test case:
         - Create in invoice with the following lines:
 
-            Product  |  Unit Price  |  Quantity  |  Multiple assets  | # assets that will be deleted
-          --------------------------------------------------------------------------------------------
-           Product B |     200      |      4     |       TRUE        |          0
-           Product A |     100      |      7     |       FALSE       |          1
-           Product A |     100      |      5     |       TRUE        |          1
-           Product A |     150      |      6     |       TRUE        |          2
-           Product A |     100      |      7     |       FALSE       |          0
+            Product  |  Unit Price  |  Quantity  |  Multiple assets
+          ---------------------------------------------------------
+           Product B |     200      |      4     |       TRUE
+           Product A |     100      |      7     |       FALSE
+           Product A |     100      |      5     |       TRUE
+           Product A |     150      |      6     |       TRUE
+           Product A |     100      |      7     |       FALSE
 
         - Add a credit note with the following lines:
 
@@ -1500,10 +1532,10 @@ class TestAccountAsset(TestAccountReportsCommon):
             with move_form.invoice_line_ids.edit(1) as line_form:
                 line_form.quantity = 2
         credit_note.action_post()
-        self.assertEqual(len(invoice.line_ids.mapped(lambda l: l.asset_ids)), 13)
+        self.assertEqual(len(invoice.line_ids.mapped(lambda l: l.asset_ids)), 17)
         self.assertEqual(len(product_b_lines.asset_ids), 4)
-        self.assertEqual(len(product_a_100_lines.asset_ids), 5)
-        self.assertEqual(len(product_a_150_lines.asset_ids), 4)
+        self.assertEqual(len(product_a_100_lines.asset_ids), 7)
+        self.assertEqual(len(product_a_150_lines.asset_ids), 6)
 
     def test_asset_with_non_deductible_tax(self):
         """Test that the assets' original_value and non_deductible_tax_value are correctly computed
@@ -2411,3 +2443,73 @@ class TestAccountAsset(TestAccountReportsCommon):
         """ Test that we can archive an asset model. """
         self.account_asset_model_fixedassets.active = False
         self.assertFalse(self.account_asset_model_fixedassets.active)
+
+    def test_asset_onchange_model(self):
+        """
+        Test the changes of account_asset_id when changing asset models
+        """
+        account_asset = self.company_data['default_account_assets'].copy()
+        asset_model = self.env['account.asset'].create({
+            'name': 'test model',
+            'state': 'model',
+            'active': True,
+            'asset_type': 'purchase',
+            'method': 'linear',
+            'method_number': 5,
+            'method_period': '1',
+            'prorata_computation_type': 'none',
+            'account_depreciation_id': self.company_data['default_account_assets'].id,
+            'account_depreciation_expense_id': self.company_data['default_account_expense'].id,
+            'account_asset_id': account_asset.id,
+            'journal_id': self.company_data['default_journal_misc'].id,
+        })
+
+        asset_model_with_account = self.env['account.asset'].create({
+            'name': 'test model with account',
+            'state': 'model',
+            'active': True,
+            'asset_type': 'purchase',
+            'method': 'linear',
+            'method_number': 5,
+            'method_period': '1',
+            'prorata_computation_type': 'none',
+            'account_depreciation_id': self.company_data['default_account_assets'].id,
+            'account_depreciation_expense_id': self.company_data['default_account_expense'].id,
+            'journal_id': self.company_data['default_journal_misc'].id,
+        })
+
+        asset_form = Form(self.env['account.asset'].with_context(asset_type='purchase'))
+        asset_form.name = "Test Asset"
+        asset_form.original_value = 10000
+        asset_form.model_id = asset_model
+
+        self.assertEqual(asset_form.account_asset_id, account_asset, "The account_asset_id should be the one from the model")
+
+        asset_form.model_id = asset_model_with_account
+        self.assertEqual(asset_form.account_asset_id, self.company_data['default_account_assets'], "The account_asset_id should be computed from the depreciation account from the model")
+
+        other_account_on_bill = self.company_data['default_account_assets'].copy()
+        other_account_on_bill.create_asset = 'draft'
+        other_account_on_bill.asset_model = asset_model
+        invoice = self.env['account.move'].create({
+            'move_type': 'in_invoice',
+            'invoice_date': '2020-12-31',
+            'partner_id': self.ref("base.res_partner_12"),
+            'invoice_line_ids': [
+                (0, 0, {
+                    'name': 'A beautiful small bomb',
+                    'account_id': other_account_on_bill.id,
+                    'price_unit': 200.0,
+                    'quantity': 1,
+                }),
+            ],
+        })
+        invoice.action_post()
+
+        self.assertEqual(invoice.asset_ids.account_asset_id, other_account_on_bill,
+                         "The account should be the one from the bill, not the model")
+
+        asset_form = Form(invoice.asset_ids)
+        asset_form.model_id = asset_model
+
+        self.assertEqual(asset_form.account_asset_id, other_account_on_bill, "We keep the account from the bill")

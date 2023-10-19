@@ -923,7 +923,7 @@ msgstr "Hapus"
 #. module: documents
 #: model:ir.actions.act_window,name:documents.documents_folder_deletion_wizard_action
 msgid "Delete Confirmation"
-msgstr ""
+msgstr "Konfirmasi Penghapusan"
 
 #. module: documents
 #: model:documents.workflow.rule,name:documents.documents_rule_internal_deprecate
@@ -1977,7 +1977,7 @@ msgstr "Proyek"
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.folder_view_form
 msgid "Read Access"
-msgstr ""
+msgstr "Hak Membaca"
 
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_folder__read_group_ids
@@ -2261,7 +2261,7 @@ msgstr ""
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.share_view_form_popup
 msgid "Shared"
-msgstr ""
+msgstr "Dibagikan"
 
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_share__document_ids

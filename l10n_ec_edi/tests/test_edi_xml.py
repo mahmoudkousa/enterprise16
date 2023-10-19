@@ -34,6 +34,9 @@ class TestEcEdiXmls(TestEcEdiCommon):
             <xpath expr="//totalSinImpuestos" position="replace">
                 <totalSinImpuestos>357.140000</totalSinImpuestos>
             </xpath>
+            <xpath expr="//totalDescuento" position="replace">
+                <totalDescuento>89.29</totalDescuento>
+            </xpath>
             <xpath expr="//totalImpuesto/baseImponible" position="replace">
                 <baseImponible>357.140000</baseImponible>
             </xpath>
@@ -52,7 +55,7 @@ class TestEcEdiXmls(TestEcEdiCommon):
                     <descripcion>product_a</descripcion>
                     <cantidad>5.000000</cantidad>
                     <precioUnitario>89.285000</precioUnitario>
-                    <descuento>89.290000</descuento>
+                    <descuento>89.29</descuento>
                     <precioTotalSinImpuesto>357.14</precioTotalSinImpuesto>
                     <impuestos>
                         <impuesto>
@@ -92,7 +95,7 @@ class TestEcEdiXmls(TestEcEdiCommon):
                 <totalSinImpuestos>426.290000</totalSinImpuestos>
             </xpath>
             <xpath expr="//totalDescuento" position="replace">
-                <totalDescuento>103.02</totalDescuento>
+                <totalDescuento>103.03</totalDescuento>
             </xpath>
             <xpath expr="//totalImpuesto/baseImponible" position="replace">
                 <baseImponible>426.290000</baseImponible>
@@ -115,7 +118,7 @@ class TestEcEdiXmls(TestEcEdiCommon):
                     <descripcion>product_b</descripcion>
                     <cantidad>12.120000</cantidad>
                     <precioUnitario>1.230198</precioUnitario>
-                    <descuento>0.000000</descuento>
+                    <descuento>0.00</descuento>
                     <precioTotalSinImpuesto>14.91</precioTotalSinImpuesto>
                     <impuestos>
                         <impuesto>
@@ -132,7 +135,7 @@ class TestEcEdiXmls(TestEcEdiCommon):
                     <descripcion>product_b</descripcion>
                     <cantidad>120.000000</cantidad>
                     <precioUnitario>0.120042</precioUnitario>
-                    <descuento>3.030000</descuento>
+                    <descuento>3.03</descuento>
                     <precioTotalSinImpuesto>11.38</precioTotalSinImpuesto>
                     <impuestos>
                         <impuesto>
@@ -167,7 +170,7 @@ class TestEcEdiXmls(TestEcEdiCommon):
                 <totalSinImpuestos>852.580000</totalSinImpuestos>
             </xpath>
             <xpath expr="//totalDescuento" position="replace">
-                <totalDescuento>206.05</totalDescuento>
+                <totalDescuento>206.06</totalDescuento>
             </xpath>
             <xpath expr="//totalImpuesto/baseImponible" position="replace">
                 <baseImponible>852.580000</baseImponible>
@@ -190,7 +193,7 @@ class TestEcEdiXmls(TestEcEdiCommon):
                     <descripcion>product_a</descripcion>
                     <cantidad>5.000000</cantidad>
                     <precioUnitario>200.000000</precioUnitario>
-                    <descuento>200.000000</descuento>
+                    <descuento>200.00</descuento>
                     <precioTotalSinImpuesto>800.00</precioTotalSinImpuesto>
                     <impuestos>
                         <impuesto>
@@ -207,7 +210,7 @@ class TestEcEdiXmls(TestEcEdiCommon):
                     <descripcion>product_b</descripcion>
                     <cantidad>12.120000</cantidad>
                     <precioUnitario>2.460396</precioUnitario>
-                    <descuento>0.000000</descuento>
+                    <descuento>0.00</descuento>
                     <precioTotalSinImpuesto>29.82</precioTotalSinImpuesto>
                     <impuestos>
                         <impuesto>
@@ -224,7 +227,7 @@ class TestEcEdiXmls(TestEcEdiCommon):
                     <descripcion>product_b</descripcion>
                     <cantidad>120.000000</cantidad>
                     <precioUnitario>0.240084</precioUnitario>
-                    <descuento>6.060000</descuento>
+                    <descuento>6.06</descuento>
                     <precioTotalSinImpuesto>22.76</precioTotalSinImpuesto>
                     <impuestos>
                         <impuesto>

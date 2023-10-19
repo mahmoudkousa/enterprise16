@@ -62,7 +62,7 @@ msgid ""
 "Adds a condition to only transfer the sum of the lines from the origin "
 "accounts that match these partners to the destination account"
 msgstr ""
-"Fügt eine Bedingung hinzu, um nur die Summe der Zeilen von den "
+"Fügt eine Bedingung hinzu, um nur die Summe der Zeilen aus den "
 "Ursprungskonten, die mit diesen Partnern übereinstimmen, auf das Zielkonto "
 "zu übertragen"
 
@@ -160,7 +160,7 @@ msgstr "Unternehmen"
 #. module: account_auto_transfer
 #: model:ir.model.fields,help:account_auto_transfer.field_account_transfer_model__company_id
 msgid "Company related to this journal"
-msgstr "Unternehmen in Verbindung mit diesem Journal"
+msgstr "Unternehmen für dieses Journal"
 
 #. module: account_auto_transfer
 #: model_terms:ir.ui.view,arch_db:account_auto_transfer.view_transfer_model_form

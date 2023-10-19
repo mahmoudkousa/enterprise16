@@ -32,10 +32,12 @@ ACCOUNT_CODES_ENGINE_SPLIT_REGEX = re.compile(r"(?=[+-])")
 
 ACCOUNT_CODES_ENGINE_TERM_REGEX = re.compile(
     r"^(?P<sign>[+-]?)"\
-    r"(?P<prefix>[A-Za-z\d.]*((?=\\)|(?<=[^CD])))"\
+    r"(?P<prefix>([A-Za-z\d.]*|tag\([\w.]+\))((?=\\)|(?<=[^CD])))"\
     r"(\\\((?P<excluded_prefixes>([A-Za-z\d.]+,)*[A-Za-z\d.]*)\))?"\
     r"(?P<balance_character>[DC]?)$"
 )
+
+ACCOUNT_CODES_ENGINE_TAG_ID_PREFIX_REGEX = re.compile(r"tag\(((?P<id>\d+)|(?P<ref>\w+\.\w+))\)")
 
 # Performance optimisation: those engines always will receive None as their next_groupby, allowing more efficient batching.
 NO_NEXT_GROUPBY_ENGINES = {'tax_tags', 'account_codes'}
@@ -1103,6 +1105,9 @@ class AccountReport(models.Model):
         elif self.filter_multi_company == 'tax_units':
             self._multi_company_tax_units_init_options(options, previous_options=previous_options)
 
+        if not 'multi_company' in options:
+            options['single_company'] = [self.env.company.id]
+
     def _multi_company_selector_init_options(self, options, previous_options=None):
         """ Initializes the multi_company option for reports configured to compute it from the company selector.
         """
@@ -2010,6 +2015,7 @@ class AccountReport(models.Model):
                 info_popup_data['applied_carryover'] = self.format_value(applied_carryover_value, figure_type='monetary')
                 info_popup_data['allow_carryover_audit'] = self.user_has_groups('base.group_no_one')
                 info_popup_data['expression_id'] = line_expressions_map['_applied_carryover_%s' % column_expr_label]['id']
+                info_popup_data['column_group_key'] = column_data['column_group_key']
 
             # Handle manual edition popup
             edit_popup_data = {}
@@ -2045,6 +2051,10 @@ class AccountReport(models.Model):
             if column_value is None:
                 formatted_name = ''
             else:
+                foreign_currency_id = target_line_res_dict.get(f'_currency_{column_expr_label}', {}).get('value')
+                if foreign_currency_id:
+                    formatter_params['currency'] = self.env['res.currency'].browse(foreign_currency_id)
+
                 formatted_name = self.format_value(
                     column_value,
                     figure_type=figure_type,
@@ -2129,10 +2139,18 @@ class AccountReport(models.Model):
                 if grouping_key not in grouped_formulas[engine]:
                     grouped_formulas[engine][grouping_key] = {}
 
-                if expression.formula not in grouped_formulas[engine][grouping_key]:
-                    grouped_formulas[engine][grouping_key][expression.formula] = expression
+                formula = expression.formula
+
+                if expression.engine == 'aggregation' and expression.formula == 'sum_children':
+                    formula = ' + '.join(
+                        f'_expression:{child_expr.id}'
+                        for child_expr in expression.report_line_id.children_ids.expression_ids.filtered(lambda e: e.label == expression.label)
+                    )
+
+                if formula not in grouped_formulas[engine][grouping_key]:
+                    grouped_formulas[engine][grouping_key][formula] = expression
                 else:
-                    grouped_formulas[engine][grouping_key][expression.formula] |= expression
+                    grouped_formulas[engine][grouping_key][formula] |= expression
 
         if groupby_to_expand and any(not expression.report_line_id.groupby for expression in expressions):
             raise UserError(_("Trying to expand groupby results on lines without a groupby value."))
@@ -2340,10 +2358,18 @@ class AccountReport(models.Model):
 
         :return : A dict((formula, expressions), result), where result is in the form {'result': numeric_value}
         """
-        def _resolve_subformula_on_dict(result, subformula):
-            for key in subformula.split('.'):
-                result = result[key]
-            return result
+        def _resolve_subformula_on_dict(result, line_codes_expression_map, subformula):
+            split_subformula = subformula.split('.')
+            if len(split_subformula) > 1:
+                line_code, expression_label = split_subformula
+                return result[line_codes_expression_map[line_code][expression_label]]
+
+            if subformula.startswith('_expression:'):
+                expression_id = int(subformula.split(':')[1])
+                return result[expression_id]
+
+            # Wrong subformula; the KeyError is caught in the function below
+            raise KeyError()
 
         def _check_is_float(to_test):
             try:
@@ -2352,26 +2378,34 @@ class AccountReport(models.Model):
             except ValueError:
                 return False
 
-        current_report_eval_dict = {} # {line code: {expression label: value}}
-        other_reports_eval_dict = {} # {forced_date_scope: {line code: {expression label: value}}}
+        current_report_eval_dict = {} # {expression_id: value}
+        other_reports_eval_dict = {} # {forced_date_scope: {expression_id: value}}
+        current_report_codes_map = {} # {line_code: {expression_label: expression_id}}
+        other_reports_codes_map = {} # {forced_date_scope: {line_code: {expression_label: expression_id}}}
 
         for expression, expression_res in other_current_report_expr_totals.items():
             if expression.report_line_id.code:
-                line_code_result_dict = current_report_eval_dict.setdefault(expression.report_line_id.code, {})
-                line_code_result_dict[expression.label] = self.env.company.currency_id.round(expression_res['value'])
+                current_report_codes_map.setdefault(expression.report_line_id.code, {})[expression.label] = expression.id
+                current_report_eval_dict[expression.id] = self.env.company.currency_id.round(expression_res['value'])
 
         for forced_date_scope, scope_expr_totals in other_cross_report_expr_totals_by_scope.items():
             for expression, expression_res in scope_expr_totals.items():
                 if expression.report_line_id.code:
-                    line_code_result_dict = other_reports_eval_dict.setdefault(forced_date_scope, {}).setdefault(expression.report_line_id.code, {})
-                    line_code_result_dict[expression.label] = self.env.company.currency_id.round(expression_res['value'])
+                    other_reports_codes_map.setdefault(forced_date_scope, {}).setdefault(expression.report_line_id.code, {})[expression.label] = expression.id
+                    other_reports_eval_dict.setdefault(forced_date_scope, {})[expression.id] = self.env.company.currency_id.round(expression_res['value'])
 
         # Complete current_report_eval_dict with the formulas of uncomputed aggregation lines
         aggregations_terms_to_evaluate = set() # Those terms are part of the formulas to evaluate; we know they will get a value eventually
         for (formula, forced_date_scope), expressions in formulas_dict.items():
             for expression in expressions:
                 if expression.report_line_id.code:
+                    if expression.report_line_id.report_id == self:
+                        current_report_codes_map.setdefault(expression.report_line_id.code, {})[expression.label] = expression.id
+                    else:
+                        other_reports_codes_map.setdefault(forced_date_scope, {}).setdefault(expression.report_line_id.code, {})[expression.label] = expression.id
+
                     aggregations_terms_to_evaluate.add(f"{expression.report_line_id.code}.{expression.label}")
+                    aggregations_terms_to_evaluate.add(f"_expression:{expression.id}") # In case it needs to be called by sum_children
 
                     if not expression.subformula:
                         # Expressions with bounds cannot be replaced by their formula in formulas calling them (otherwize, bounds would be ignored).
@@ -2381,7 +2415,7 @@ class AccountReport(models.Model):
                         else:
                             eval_dict = other_reports_eval_dict.setdefault(forced_date_scope, {})
 
-                        eval_dict.setdefault(expression.report_line_id.code, {})[expression.label] = formula
+                        eval_dict[expression.id] = formula
 
         rslt = {}
         to_treat = [(formula, formula, forced_date_scope) for (formula, forced_date_scope) in formulas_dict.keys()] # Formed like [(expanded formula, original unexpanded formula)]
@@ -2396,13 +2430,18 @@ class AccountReport(models.Model):
                 # and enqueue the formula back; it'll be tried anew later in the loop.
                 for term in terms_to_eval:
                     try:
-                        expanded_term = _resolve_subformula_on_dict({**current_report_eval_dict, **other_reports_eval_dict.get(forced_date_scope, {})}, term)
+                        expanded_term = _resolve_subformula_on_dict(
+                            {**current_report_eval_dict, **other_reports_eval_dict.get(forced_date_scope, {})},
+                            {**current_report_codes_map, **other_reports_codes_map.get(forced_date_scope, {})},
+                            term,
+                        )
                     except KeyError:
                         if term in aggregations_terms_to_evaluate:
                             # Then, the term is probably an aggregation with bounds that still needs to be computed. We need to keep on looping
                             continue
                         else:
                             raise UserError(_("Could not expand term %s while evaluating formula %s", term, unexpanded_formula))
+
                     formula = re.sub(term_replacement_regex % re.escape(term), f'({expanded_term})', formula)
 
                 to_treat.append((formula, unexpanded_formula, forced_date_scope))
@@ -2429,7 +2468,8 @@ class AccountReport(models.Model):
 
                         criterium_code = other_expr_criterium_match['line_code']
                         criterium_label = other_expr_criterium_match['expr_label']
-                        criterium_val = current_report_eval_dict.get(criterium_code, {}).get(criterium_label)
+                        criterium_expression_id = current_report_codes_map.get(criterium_code, {}).get(criterium_label)
+                        criterium_val = current_report_eval_dict.get(criterium_expression_id)
                         if not isinstance(criterium_val, float):
                             # The criterium expression has not be evaluated yet. Postpone the evaluation of this formula, and skip this expression
                             # for now. We still try to evaluate other expressions using this formula if any; this means those expressions will
@@ -2451,13 +2491,12 @@ class AccountReport(models.Model):
                         # This condition ensures we don't return necessary subcomputations in the final result
                         rslt[(unexpanded_formula, expression)] = {'result': expression_result}
 
-                    if expression.report_line_id.code:
-                        # If lines using this formula have a code, they are probably used in other formulas.
-                        # We need to make the result of our computation available to them, as they are still waiting in to_treat to be evaluated.
-                        if expression.report_line_id.report_id == self:
-                            current_report_eval_dict.setdefault(expression.report_line_id.code, {})[expression.label] = expression_result
-                        else:
-                            other_reports_eval_dict.setdefault(forced_date_scope, {}).setdefault(expression.report_line_id.code, {})[expression.label] = expression_result
+                    # Handle recursive aggregations (explicit or through the sum_children shortcut).
+                    # We need to make the result of our computation available to other aggregations, as they are still waiting in to_treat to be evaluated.
+                    if expression.report_line_id.report_id == self:
+                        current_report_eval_dict[expression.id] = expression_result
+                    else:
+                        other_reports_eval_dict.setdefault(forced_date_scope, {})[expression.id] = expression_result
 
         return rslt
 
@@ -2813,7 +2852,20 @@ class AccountReport(models.Model):
         prefix_params = []
         company_ids = [comp_opt['id'] for comp_opt in options.get('multi_company', self.env.company)]
         for prefix, excluded_prefixes in prefixes_to_compute:
-            account_domain = [('company_id', 'in', company_ids), ('code', '=like', f'{prefix}%')]
+            account_domain = [('company_id', 'in', company_ids)]
+
+            tag_match = ACCOUNT_CODES_ENGINE_TAG_ID_PREFIX_REGEX.match(prefix)
+
+            if tag_match:
+                if tag_match['ref']:
+                    tag_id = self.env['ir.model.data']._xmlid_to_res_id(tag_match['ref'])
+                else:
+                    tag_id = int(tag_match['id'])
+
+                account_domain.append(('tag_ids', 'in', [tag_id]))
+            else:
+                account_domain.append(('code', '=like', f'{prefix}%'))
+
             excluded_prefixes_domains = []
 
             for excluded_prefix in excluded_prefixes:
@@ -3234,7 +3286,18 @@ class AccountReport(models.Model):
             for token in ACCOUNT_CODES_ENGINE_SPLIT_REGEX.split(formula.replace(' ', '')):
                 if token:
                     match_dict = ACCOUNT_CODES_ENGINE_TERM_REGEX.match(token).groupdict()
-                    account_codes_domain = [('account_id.code', '=like', f"{match_dict['prefix']}%")]
+                    tag_match = ACCOUNT_CODES_ENGINE_TAG_ID_PREFIX_REGEX.match(match_dict['prefix'])
+                    account_codes_domain = []
+
+                    if tag_match:
+                        if tag_match['ref']:
+                            tag_id = self.env['ir.model.data']._xmlid_to_res_id(tag_match['ref'])
+                        else:
+                            tag_id = int(tag_match['id'])
+
+                        account_codes_domain.append(('account_id.tag_ids', 'in', [tag_id]))
+                    else:
+                        account_codes_domain.append(('account_id.code', '=like', f"{match_dict['prefix']}%"))
 
                     excluded_prefix_str = match_dict['excluded_prefixes']
                     if excluded_prefix_str:
@@ -4602,8 +4665,11 @@ class AccountReport(models.Model):
         """
         self.ensure_one()
 
-        if self.env.company.account_fiscal_country_id != self.country_id:
+        if self.availability_condition == 'country' and self.env.company.account_fiscal_country_id != self.country_id:
             raise UserError(_("The company's country does not match the report's country."))
+
+        if self.availability_condition == 'coa' and self.env.company.chart_template_id != self.chart_template_id:
+            raise UserError(_("The company's chart of account does not match the report's chart of accounts."))
 
         if self.root_report_id not in (self.env.ref('account_reports.profit_and_loss'), self.env.ref('account_reports.balance_sheet')):
             raise UserError(_("The Accounts Coverage Report is only available for the Profit and Loss and Balance Sheet reports."))
@@ -4644,8 +4710,10 @@ class AccountReport(models.Model):
                     if not token:
                         continue
                     token_match = ACCOUNT_CODES_ENGINE_TERM_REGEX.match(token)
-                    if not token_match:
+                    # tag selectors on account_codes engine are not supported for now ; this will come later (probably not in stable)
+                    if not token_match or ACCOUNT_CODES_ENGINE_TAG_ID_PREFIX_REGEX.match(token_match['prefix']):
                         continue
+
                     parsed_token = token_match.groupdict()
                     account_codes.append({
                         'prefix': parsed_token['prefix'],

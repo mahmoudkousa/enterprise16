@@ -371,6 +371,27 @@ class TestReportEngines(TestAccountReportsCommon):
                 self.assertEqual(move.line_ids.filtered_domain(action_dict['domain']), expected_amls)
 
     def test_engine_account_codes(self):
+        # Create test account tags
+        account_tags = self.env['account.account.tag']._load_records([
+            {
+                'xml_id': 'account_reports.account_codes_engine_test_tag1',
+                'noupdate': True,
+                'values': {
+                    'name': "account_codes test tag 1",
+                    'applicability': 'accounts',
+                },
+            },
+
+            {
+                'xml_id': 'account_reports.account_codes_engine_test_tag2',
+                'noupdate': True,
+                'values': {
+                    'name': "account_codes test tag 2",
+                    'applicability': 'accounts',
+                },
+            },
+        ])
+
         # Create the report.
         test_line_1 = self._prepare_test_report_line(
             self._prepare_test_expression_account_codes('1'),
@@ -420,10 +441,26 @@ class TestReportEngines(TestAccountReportsCommon):
             self._prepare_test_expression_account_codes(r'345D\()C'),
             groupby='account_id',
         )
+        test_line_13 = self._prepare_test_report_line(
+            self._prepare_test_expression_account_codes(rf'tag(account_reports.account_codes_engine_test_tag1) + tag({account_tags[1].id})'),
+            groupby='account_id',
+        )
+        test_line_14 = self._prepare_test_report_line(
+            self._prepare_test_expression_account_codes(r'tag(account_reports.account_codes_engine_test_tag1)D'),
+            groupby='account_id',
+        )
+        test_line_15 = self._prepare_test_report_line(
+            self._prepare_test_expression_account_codes(r'tag(account_reports.account_codes_engine_test_tag1)C'),
+            groupby='account_id',
+        )
+        test_line_16 = self._prepare_test_report_line(
+            self._prepare_test_expression_account_codes(rf'tag(account_reports.account_codes_engine_test_tag1)\(101)D + 101003 + tag({account_tags[1].id})\(101)C'),
+            groupby='account_id',
+        )
 
         report = self._create_report([
             test_line_1, test_line_2, test_line_3, test_line_4, test_line_5, test_line_6, test_line_7, test_line_8,
-            test_line_9, test_line_10, test_line_11, test_line_12,
+            test_line_9, test_line_10, test_line_11, test_line_12, test_line_13, test_line_14, test_line_15, test_line_16
         ])
 
         # Create the journal entries.
@@ -435,6 +472,10 @@ class TestReportEngines(TestAccountReportsCommon):
             self._prepare_test_account_move_line(10000.0, account_code='10.20.0'),
             self._prepare_test_account_move_line(10.0, account_code='345D'),
         ])
+
+        # Setup tags on accounts
+        self.env['account.account'].search([('code', 'in', ('100001', '101001'))]).tag_ids = account_tags[0]
+        self.env['account.account'].search([('code', 'in', ('10.20.0', '101002'))]).tag_ids = account_tags[1]
 
         # Check the values.
         options = self._generate_options(report, '2020-01-01', '2020-01-01', default_options={'unfold_all': True})
@@ -481,6 +522,18 @@ class TestReportEngines(TestAccountReportsCommon):
                 ('test_line_11',         10.0),
                 ('345D 345D',            10.0),
                 ('test_line_12',           ''),
+                ('test_line_13',      12700.0),
+                ('10.20.0 10.20.0',   10000.0),
+                ('100001 100001',      1000.0),
+                ('101001 101001',      2000.0),
+                ('101002 101002',      -300.0),
+                ('test_line_14',       3000.0),
+                ('100001 100001',      1000.0),
+                ('101001 101001',      2000.0),
+                ('test_line_15',           ''),
+                ('test_line_16',        400.0),
+                ('100001 100001',      1000.0),
+                ('101003 101003',      -600.0),
             ],
         )
 
@@ -799,14 +852,37 @@ class TestReportEngines(TestAccountReportsCommon):
             name='test11_6', code='test11_6',
         )
 
+        # Test sum_children formula (parent_id relationship is populated below)
+        test_12_1 = self._prepare_test_report_line(
+            self._prepare_test_expression_aggregation('sum_children'),
+            name='test12_1', code='test12_1',
+        )
+        test_12_2 = self._prepare_test_report_line(
+            self._prepare_test_expression_aggregation('test1.tax_tags'),
+            name='test12_2', code='test12_2',
+        )
+        test_12_3 = self._prepare_test_report_line(
+            self._prepare_test_expression_aggregation('test1.domain'),
+            name='test12_3', code='test12_3',
+        )
+        test_12_4 = self._prepare_test_report_line(
+            self._prepare_test_expression_domain([('account_id.code', '=', '101003')], 'sum'),
+            name='test12_4', code='test12_4',
+        )
+
         report = self._create_report(
             [
                 test1, test2_1, test2_2, test2_3, test2_4, test3_1, test3_2, test3_3, test4_1, test4_2,
                 test5, test6, test7, test9, test10_1, test10_2, test10_3, test11_1, test11_2, test11_3, test11_4,
-                test11_5, test11_6,
+                test11_5, test11_6, test_12_1, test_12_2, test_12_3, test_12_4,
             ],
             country_id=self.fake_country.id,
         )
+
+        # Set parent link properly for sum_children test, now that all lines are created:
+        line_12_1 = self.env['account.report.line'].search([('code', '=', 'test12_1')])
+        children_lines = self.env['account.report.line'].search([('code', 'in', ('test12_2', 'test12_3', 'test12_4'))])
+        children_lines.parent_id = line_12_1
 
         # Create the journal entries.
         moves = self._create_test_account_moves([
@@ -847,6 +923,10 @@ class TestReportEngines(TestAccountReportsCommon):
                 ('test11_4',               ''),
                 ('test11_5',            100.0),
                 ('test11_6',               ''),
+                ('test12_1',           3200.0),
+                ('test12_2',           2000.0),
+                ('test12_3',           -300.0),
+                ('test12_4',           1500.0),
             ],
         )
 

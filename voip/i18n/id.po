@@ -130,7 +130,7 @@ msgstr "Avatar"
 #: code:addons/voip/static/src/xml/dialing_panel.xml:0
 #, python-format
 msgid "Backspace"
-msgstr ""
+msgstr "Backspace"
 
 #. module: voip
 #. odoo-javascript
@@ -657,7 +657,7 @@ msgstr "Ponsel:"
 #: code:addons/voip/static/src/xml/phone_call_details.xml:0
 #, python-format
 msgid "Mute"
-msgstr ""
+msgstr "Mute"
 
 #. module: voip
 #: model_terms:ir.ui.view,arch_db:voip.view_voip_case_phonecalls_filter
@@ -1087,7 +1087,7 @@ msgstr "Pengguna"
 #. module: voip
 #: model:ir.model,name:voip.model_res_users_settings
 msgid "User Settings"
-msgstr ""
+msgstr "Pengaturan User"
 
 #. module: voip
 #: model:ir.model,name:voip.model_voip_phonecall

@@ -2054,14 +2054,14 @@ msgstr "Les taxes intracommunautaires sont appliquées sur"
 #: code:addons/account_reports/models/account_report.py:0
 #, python-format
 msgid "Invalid domain formula in expression %r of line %r: %s"
-msgstr ""
+msgstr "Formule de domaine invalide dans l'expression %r ou la ligne %r : %s"
 
 #. module: account_reports
 #. odoo-python
 #: code:addons/account_reports/models/account_report.py:0
 #, python-format
 msgid "Invalid method %r"
-msgstr ""
+msgstr "Méthode invalide %r"
 
 #. module: account_reports
 #. odoo-python
@@ -2069,7 +2069,7 @@ msgstr ""
 #: code:addons/account_reports/models/account_report.py:0
 #, python-format
 msgid "Invalid subformula in expression %r of line %r: %s"
-msgstr ""
+msgstr "Sous-formule invalide dans l'expression %r ou la ligne %r : %s"
 
 #. module: account_reports
 #. odoo-python
@@ -3180,6 +3180,15 @@ msgstr "Le bilan des livres dans Odoo à la date d'aujourd'hui"
 #. odoo-python
 #: code:addons/account_reports/models/account_report.py:0
 #, python-format
+msgid ""
+"The company's chart of account does not match the report's chart of "
+"accounts."
+msgstr ""
+
+#. module: account_reports
+#. odoo-python
+#: code:addons/account_reports/models/account_report.py:0
+#, python-format
 msgid "The company's country does not match the report's country."
 msgstr "Le pays de l'entreprise ne correspond pas au pays du rapport."
 
@@ -3641,6 +3650,13 @@ msgstr ""
 " car cela supprimerait les valeurs de report ayant un impact sur la "
 "déclaration de TVA d'une période verrouillée. Pour ce faire, vous devez "
 "d'abord modifier la date de verrouillage de votre déclaration fiscale."
+
+#. module: account_reports
+#. odoo-python
+#: code:addons/account_reports/models/account_multicurrency_revaluation_report.py:0
+#, python-format
+msgid "You need to activate more than one currency to access this report."
+msgstr "Vous devez activer plus d'une devise pour accéder à ce rapport."
 
 #. module: account_reports
 #: model_terms:ir.ui.view,arch_db:account_reports.main_template

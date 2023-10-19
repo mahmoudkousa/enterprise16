@@ -568,6 +568,12 @@ class SaleOrder(models.Model):
     # Actions #
     ###########
 
+    def action_update_prices(self):
+        # Resetting the price_unit will break the link to the parent_line_id. action_update_prices will recompute
+        # the price and _compute_parent_line_id will be recomputed.
+        self.order_line.price_unit = False
+        super(SaleOrder, self).action_update_prices()
+
     def action_archived_product(self):
         archived_product_ids = self.with_context(active_test=False).archived_product_ids
         action = self.env["ir.actions.actions"]._for_xml_id("product.product_normal_action_sell")
@@ -621,6 +627,7 @@ class SaleOrder(models.Model):
         upsell = child_subscriptions.filtered(lambda s: s.subscription_management == 'upsell' and s.state in ['draft', 'sent'])
         # We need to call super with batches of subscription in the same stage
         res = super(SaleOrder, self - confirmed_subscription).action_confirm()
+        confirmed_subscription.filtered(lambda so: not so.stage_id).stage_id = self._get_default_stage_id()
         for stage in confirmed_subscription.mapped('stage_id'):
             subs_current_stage = confirmed_subscription.filtered(lambda so: so.stage_id.id == stage.id)
             res = res and super(SaleOrder, subs_current_stage).action_confirm()
@@ -897,6 +904,8 @@ class SaleOrder(models.Model):
             'subscription_id': subscription.id,
             'pricelist_id': subscription.pricelist_id.id,
             'partner_id': subscription.partner_id.id,
+            'partner_invoice_id': subscription.partner_invoice_id.id,
+            'partner_shipping_id': subscription.partner_shipping_id.id,
             'order_line': order_lines,
             'analytic_account_id': subscription.analytic_account_id.id,
             'subscription_management': subscription_management,

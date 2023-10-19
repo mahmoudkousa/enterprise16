@@ -106,7 +106,7 @@ class AccountReport(models.AbstractModel):
 
         line_fields = self.env['account.move.line'].fields_get()
         self.env.cr.execute("SELECT column_name FROM information_schema.columns WHERE table_name='account_move_line'")
-        stored_fields = set(f[0] for f in self.env.cr.fetchall())
+        stored_fields = set(f[0] for f in self.env.cr.fetchall() if f[0] in line_fields)
         changed_equivalence_dict = {
             "id": sql.Identifier("id"),
             "balance": sql.SQL("-amount"),
@@ -132,7 +132,9 @@ class AccountReport(models.AbstractModel):
             else:
                 if line_fields[fname].get("translate"):
                     typecast = sql.SQL('jsonb')
-                elif line_fields[fname].get("type") in ("many2one", "one2many", "many2many", "monetary"):
+                elif line_fields[fname].get("type") == "monetary":
+                    typecast = sql.SQL('numeric')
+                elif line_fields[fname].get("type") == "many2one":
                     typecast = sql.SQL('integer')
                 elif line_fields[fname].get("type") == "datetime":
                     typecast = sql.SQL('date')

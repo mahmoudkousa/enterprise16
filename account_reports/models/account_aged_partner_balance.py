@@ -102,6 +102,7 @@ class AgedPartnerBalanceCustomHandler(models.AbstractModel):
                 rslt.update({
                     'due_date': query_res['due_date'][0] if len(query_res['due_date']) == 1 else None,
                     'amount_currency': query_res['amount_currency'],
+                    'currency_id': query_res['currency_id'][0] if len(query_res['currency_id']) == 1 else None,
                     'currency': currency.display_name if currency else None,
                     'account_name': query_res['account_name'][0] if len(query_res['account_name']) == 1 else None,
                     'expected_date': query_res['expected_date'][0] if len(query_res['expected_date']) == 1 else None,
@@ -115,6 +116,7 @@ class AgedPartnerBalanceCustomHandler(models.AbstractModel):
                 rslt.update({
                     'due_date': None,
                     'amount_currency': None,
+                    'currency_id': None,
                     'currency': None,
                     'account_name': None,
                     'expected_date': None,
@@ -305,12 +307,12 @@ class AgedPartnerBalanceCustomHandler(models.AbstractModel):
 
                                 for expression in expressions_to_evaluate:
                                     partner_aml_expression_totals[expression]['value'].append(
-                                        (aml_data['aml_id'], aml_data[expression.label])
+                                        (aml_data['aml_id'], aml_data[expression.subformula])
                                     )
 
                             for expression in expressions_to_evaluate:
                                 partner_expression_totals[expression]['value'].append(
-                                    (partner_id, partner_values[expression.label])
+                                    (partner_id, partner_values[expression.subformula])
                                 )
 
         return rslt
@@ -319,6 +321,7 @@ class AgedPartnerBalanceCustomHandler(models.AbstractModel):
         partner_values = {
             'due_date': None,
             'amount_currency': None,
+            'currency_id': None,
             'currency': None,
             'account_name': None,
             'expected_date': None,
@@ -331,6 +334,13 @@ class AgedPayableCustomHandler(models.AbstractModel):
     _name = 'account.aged.payable.report.handler'
     _inherit = 'account.aged.partner.balance.report.handler'
     _description = 'Aged Payable Custom Handler'
+
+    def _custom_options_initializer(self, report, options, previous_options=None):
+        super()._custom_options_initializer(report, options, previous_options=previous_options)
+
+        if options.get('account_type'):
+            options['account_type'] = [account_type for account_type in options['account_type'] if account_type['id'] not in ('trade_receivable', 'non_trade_receivable')]
+
 
     def open_journal_items(self, options, params):
         payable_account_type = {'id': 'trade_payable', 'name': _("Payable"), 'selected': True}
@@ -353,6 +363,12 @@ class AgedReceivableCustomHandler(models.AbstractModel):
     _name = 'account.aged.receivable.report.handler'
     _inherit = 'account.aged.partner.balance.report.handler'
     _description = 'Aged Receivable Custom Handler'
+
+    def _custom_options_initializer(self, report, options, previous_options=None):
+        super()._custom_options_initializer(report, options, previous_options=previous_options)
+
+        if options.get('account_type'):
+            options['account_type'] = [account_type for account_type in options['account_type'] if account_type['id'] not in ('trade_payable', 'non_trade_payable')]
 
     def open_journal_items(self, options, params):
         receivable_account_type = {'id': 'trade_receivable', 'name': _("Receivable"), 'selected': True}

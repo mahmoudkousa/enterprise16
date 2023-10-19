@@ -403,9 +403,11 @@ class TestInventoryAdjustmentBarcodeClientAction(TestBarcodeClientAction):
 
     def test_gs1_inventory_lot_serial(self):
         """ Checks tracking numbers and quantites are correctly got from GS1
-        barcodes for tracked products."""
+        barcodes for tracked products.
+        Also, this test is an opportunity to ensure custom GS1 separators are used clientside."""
         self.clean_access_rights()
         self.env.company.nomenclature_id = self.env.ref('barcodes_gs1_nomenclature.default_gs1_nomenclature')
+        self.env.company.nomenclature_id.gs1_separator_fnc1 = r'(#|\x1D|~)'
 
         product_lot = self.env['product.product'].create({
             'name': 'PRO_GTIN_12_lot',
@@ -458,3 +460,31 @@ class TestInventoryAdjustmentBarcodeClientAction(TestBarcodeClientAction):
             smls_serial.lot_id.mapped('name'),
             ['Serial1', 'Serial2', 'Serial3', 'Serial4']
         )
+
+    def test_scan_product_lot_with_package(self):
+        """
+        Check that a lot can be scanned in the inventory Adjustments,
+        when the package is set in the quant.
+        """
+        # Enable the package option
+        self.env['res.config.settings'].create({'group_stock_tracking_lot': True}).execute()
+        product = self.env['product.product'].create({
+            'name': 'Product',
+            'type': 'product',
+            'tracking': 'lot',
+        })
+        self.env["stock.quant"].create({
+            'product_id': product.id,
+            'location_id': self.env.ref('stock.stock_location_stock').id,
+            'quantity': 10,
+            'package_id': self.env['stock.quant.package'].create({
+                'name': 'Package-test',
+            }).id,
+            'lot_id': self.env['stock.lot'].create({
+                'name': 'Lot-test',
+                'product_id': product.id,
+                'company_id': self.env.company.id,
+            }).id,
+        })
+        self.assertEqual(product.qty_available, 10)
+        self.start_tour("/web", 'stock_barcode_package_with_lot', login="admin")

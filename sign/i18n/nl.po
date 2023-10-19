@@ -5,9 +5,9 @@
 # Translators:
 # Martin Trigaux, 2022
 # Camille Dantinne <cmd@odoo.com>, 2022
+# Wil Odoo, 2023
 # Erwin van der Ploeg <erwin@odooexperts.nl>, 2023
 # Jolien De Paepe, 2023
-# Wil Odoo, 2023
 # 
 msgid ""
 msgstr ""
@@ -15,7 +15,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-04-14 06:16+0000\n"
 "PO-Revision-Date: 2022-09-22 05:49+0000\n"
-"Last-Translator: Wil Odoo, 2023\n"
+"Last-Translator: Jolien De Paepe, 2023\n"
 "Language-Team: Dutch (https://app.transifex.com/odoo/teams/41243/nl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -188,7 +188,7 @@ msgstr ""
 #. module: sign
 #: model_terms:ir.ui.view,arch_db:sign.sign_iap_credits_banner
 msgid "<i class=\"fa fa-arrow-right\"/> Buy credits"
-msgstr "<i class=\"fa fa-arrow-right\"/> Credits aanschaffen"
+msgstr "<i class=\"fa fa-arrow-right\"/> Credits kopen"
 
 #. module: sign
 #: model_terms:ir.ui.view,arch_db:sign.sign_request_logs_user
@@ -964,7 +964,7 @@ msgstr "Klant"
 #. module: sign
 #: model:ir.model.fields,help:sign.field_sign_request_item__access_url
 msgid "Customer Portal URL"
-msgstr "Klant portaal URL"
+msgstr "Klantenportaal URL"
 
 #. module: sign
 #: model:ir.ui.menu,name:sign.sign_template_menu
@@ -1193,7 +1193,7 @@ msgstr "Dropdown menu"
 #: code:addons/sign/static/src/xml/sign_backend.xml:0
 #, python-format
 msgid "Duplicate"
-msgstr "Dupliceren"
+msgstr "Dupliceer"
 
 #. module: sign
 #. odoo-javascript
@@ -2128,12 +2128,12 @@ msgstr "Aantal acties"
 #. module: sign
 #: model_terms:ir.ui.view,arch_db:sign.sign_template_view_kanban
 msgid "Number of documents in progress for this template."
-msgstr "Aantal documenten in behandeling voor dit sjabloon."
+msgstr "Aantal documenten in behandeling voor deze sjabloon."
 
 #. module: sign
 #: model_terms:ir.ui.view,arch_db:sign.sign_template_view_kanban
 msgid "Number of documents signed for this template."
-msgstr "Aantal ondertekende documenten voor dit sjabloon."
+msgstr "Aantal ondertekende documenten voor deze sjabloon."
 
 #. module: sign
 #: model:ir.model.fields,field_description:sign.field_sign_request__message_has_error_counter
@@ -3117,7 +3117,7 @@ msgstr "Sommige niet-geautoriseerde items zijn gevuld"
 #, python-format
 msgid "Somebody is already filling a document which uses this template"
 msgstr ""
-"Iemand is dit document dat dit sjabloon gebruikt reeds aan het invullen"
+"Iemand is dit document dat deze sjabloon gebruikt reeds aan het invullen"
 
 #. module: sign
 #. odoo-javascript
@@ -3496,7 +3496,7 @@ msgstr "Het handtekeningsverzoek is aangepast door: %s."
 #: code:addons/sign/static/src/js/backend/sign_template.js:0
 #, python-format
 msgid "The template doesn't exist anymore."
-msgstr "Het sjabloon bestaat niet meer."
+msgstr "De sjabloon bestaat niet meer."
 
 #. module: sign
 #. odoo-python
@@ -3505,8 +3505,8 @@ msgstr "Het sjabloon bestaat niet meer."
 msgid ""
 "The template has more pages than the current file, it can't be applied."
 msgstr ""
-"Het sjabloon telt meer pagina's dan het huidige bestand, het kan niet worden"
-" toegepast."
+"De sjabloon telt meer pagina's dan het huidige bestand, het kan niet worden "
+"toegepast."
 
 #. module: sign
 #: model_terms:ir.ui.view,arch_db:sign.green_savings_report
@@ -3707,6 +3707,17 @@ msgstr ""
 "afzender van het document."
 
 #. module: sign
+#. odoo-python
+#: code:addons/sign/controllers/main.py:0
+#, python-format
+msgid ""
+"Unable to sign the document due to missing required data. Please contact an "
+"administrator."
+msgstr ""
+"Kan het document niet ondertekenen door ontbrekende vereiste gegevens. Neem "
+"contact op met een beheerder."
+
+#. module: sign
 #: model:ir.model.fields.selection,name:sign.selection__sign_item_role__auth_method__sms
 msgid "Unique Code via SMS"
 msgstr "Unieke code via sms"
@@ -3887,7 +3898,7 @@ msgstr ""
 #, python-format
 msgid "We will send you this document by email once everyone has signed."
 msgstr ""
-"We verzenden je dit document via e-mail eenmaal iedereen heeft getekend."
+"We verzenden je dit document per e-mail eenmaal iedereen heeft getekend."
 
 #. module: sign
 #. odoo-javascript
@@ -4265,7 +4276,7 @@ msgstr "labels"
 #: code:addons/sign/static/src/xml/sign_backend.xml:0
 #, python-format
 msgid "this template to modify it."
-msgstr "dit sjabloon om het te wijzigen."
+msgstr "deze sjabloon om het te wijzigen."
 
 #. module: sign
 #: model_terms:ir.ui.view,arch_db:sign.sign_request_logs_user

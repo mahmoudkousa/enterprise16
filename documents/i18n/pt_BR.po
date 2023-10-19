@@ -6,9 +6,9 @@
 # Marcel Savegnago <marcel.savegnago@gmail.com>, 2022
 # Silmar <pinheirosilmar@gmail.com>, 2022
 # Martin Trigaux, 2022
-# Éder Brito <britoederr@gmail.com>, 2023
 # Kevilyn Rosa, 2023
 # adrianojprado <adrianojprado@gmail.com>, 2023
+# Éder Brito <britoederr@gmail.com>, 2023
 # Layna Nascimento, 2023
 # 
 msgid ""
@@ -30,7 +30,7 @@ msgstr ""
 #: code:addons/documents/static/src/views/inspector/documents_inspector.js:0
 #, python-format
 msgid " + Add a tag"
-msgstr " + Adicionar uma etiqueta"
+msgstr " + Adicionar um marcador"
 
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.share_page
@@ -120,8 +120,8 @@ msgstr "<b>Bytes</b>"
 #, python-format
 msgid "<b>Deselect this page</b> as we plan to process all bills first."
 msgstr ""
-"<b>Desmarcar esta página</b> uma vez que planejamos processar todas as "
-"contas primeiro."
+"<b>Desmarque esta página</b> já que planejamos processar todas as faturas "
+"primeiro."
 
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.format_file_size
@@ -1058,7 +1058,7 @@ msgstr "Documento de direitos de upload do usuário"
 #. module: documents
 #: model:ir.model,name:documents.model_documents_workflow_action
 msgid "Document Workflow Tag Action"
-msgstr "Ação de etiqueta para Fluxo de documento"
+msgstr "Ação de marcador para Fluxo de documento"
 
 #. module: documents
 #: model:ir.model.fields.selection,name:documents.selection__documents_share__type__ids
@@ -2123,7 +2123,7 @@ msgstr "Documento Requisitado"
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_workflow_rule__required_tag_ids
 msgid "Required Tags"
-msgstr "Etiquetas obrigatórias"
+msgstr "Marcadores obrigatórias"
 
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_document__res_model_name
@@ -2198,7 +2198,8 @@ msgstr ""
 #, python-format
 msgid "Send this letter to the legal department, by assigning the right tags."
 msgstr ""
-"Envie essa carta ao departamento jurídico, atribuindo as etiquetas corretas."
+"Envie essa carta ao departamento jurídico, atribuindo os marcadores "
+"corretos."
 
 #. module: documents
 #: model:documents.workflow.rule,name:documents.documents_rule_internal_legal
@@ -2236,7 +2237,7 @@ msgstr "Definir Proprietário"
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_workflow_rule__tag_action_ids
 msgid "Set Tags"
-msgstr "Definir Etiquetas"
+msgstr "Definir Marcadores"
 
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_workflow_rule__has_owner_activity
@@ -2327,7 +2328,7 @@ msgstr "Documentos compartilhados"
 #. module: documents
 #: model:ir.model.fields,field_description:documents.field_documents_share__tag_ids
 msgid "Shared Tags"
-msgstr "Etiquetas Compartilhados"
+msgstr "Marcadores compartilhados"
 
 #. module: documents
 #: model:ir.ui.menu,name:documents.share_menu
@@ -2413,7 +2414,7 @@ msgstr "Marcador"
 #: model:ir.model.fields,field_description:documents.field_documents_folder__facet_ids
 #: model_terms:ir.ui.view,arch_db:documents.folder_view_tree
 msgid "Tag Categories"
-msgstr "Categorias de etiquetas"
+msgstr "Categorias de marcadores"
 
 #. module: documents
 #: model_terms:ir.ui.view,arch_db:documents.facet_view_form
@@ -2428,12 +2429,12 @@ msgstr "Nome do Marcador"
 #. module: documents
 #: model:ir.model.constraint,message:documents.constraint_documents_tag_facet_name_unique
 msgid "Tag already exists for this facet"
-msgstr "Etiqueta já existe para esta faceta"
+msgstr "Narcadir já existe para esta faceta"
 
 #. module: documents
 #: model:ir.model.fields,help:documents.field_documents_folder__facet_ids
 msgid "Tag categories defined for this workspace"
-msgstr "Categorias de etiquetas definidas para este espaço de trabalho"
+msgstr "Categorias de marcador definidas para este espaço de trabalho"
 
 #. module: documents
 #. odoo-javascript

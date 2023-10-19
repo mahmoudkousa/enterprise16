@@ -1036,7 +1036,7 @@ msgstr ""
 #. module: knowledge
 #: model:ir.model.fields,field_description:knowledge.field_knowledge_article__user_can_write
 msgid "Can Write"
-msgstr ""
+msgstr "Dapat Menulis"
 
 #. module: knowledge
 #. odoo-python
@@ -1395,7 +1395,7 @@ msgstr "Dikelompokkan berdasarkan"
 #: code:addons/knowledge/static/src/components/permission_panel/permission_panel.xml:0
 #, python-format
 msgid "Guest"
-msgstr ""
+msgstr "Tamu"
 
 #. module: knowledge
 #: model:ir.model.fields,field_description:knowledge.field_knowledge_article__user_has_access
@@ -2205,7 +2205,7 @@ msgstr "Urutan"
 #: model_terms:ir.ui.view,arch_db:knowledge.knowledge_article_tree
 #: model_terms:ir.ui.view,arch_db:knowledge.knowledge_article_view_search
 msgid "Shared"
-msgstr ""
+msgstr "Dibagikan"
 
 #. module: knowledge
 #: model_terms:ir.ui.view,arch_db:knowledge.knowledge_article_tree_frontend

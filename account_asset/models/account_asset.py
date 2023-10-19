@@ -74,7 +74,7 @@ class AccountAsset(models.Model):
     prorata_date = fields.Date(  # the starting date of the depreciations
         string='Prorata Date',
         compute='_compute_prorata_date', store=True, readonly=False,
-        copy=False,
+        copy=True,
     )
     paused_prorata_date = fields.Date(compute='_compute_paused_prorata_date')  # number of days to shift the computation of future deprecations
     account_asset_id = fields.Many2one('account.account', string='Fixed Asset Account', compute='_compute_account_asset_id', help="Account used to record the purchase of the asset at its original price.", store=True, readonly=False, states={'close': [('readonly', True)]}, domain="[('company_id', '=', company_id), ('is_off_balance', '=', False)]")
@@ -117,7 +117,7 @@ class AccountAsset(models.Model):
     original_move_line_ids = fields.Many2many('account.move.line', 'asset_move_line_rel', 'asset_id', 'line_id', string='Journal Items', readonly=True, states={'draft': [('readonly', False)]}, copy=False)
 
     # Dates
-    acquisition_date = fields.Date(compute='_compute_acquisition_date', store=True, states={'draft': [('readonly', False)]}, copy=False)
+    acquisition_date = fields.Date(compute='_compute_acquisition_date', store=True, states={'draft': [('readonly', False)]}, copy=True)
     disposal_date = fields.Date(readonly=True, states={'draft': [('readonly', False)]}, compute="_compute_disposal_date", store=True)
 
     # model-related fields
@@ -377,6 +377,7 @@ class AccountAsset(models.Model):
             self.method_progress_factor = model.method_progress_factor
             self.prorata_computation_type = model.prorata_computation_type
             self.analytic_distribution = model.analytic_distribution or self.analytic_distribution
+            self.account_asset_id = model.account_asset_id
             self.account_depreciation_id = model.account_depreciation_id
             self.account_depreciation_expense_id = model.account_depreciation_expense_id
             self.journal_id = model.journal_id
@@ -748,15 +749,31 @@ class AccountAsset(models.Model):
         }
 
     def open_increase(self):
-        return {
+        result = {
             'name': _('Gross Increase'),
             'view_mode': 'tree,form',
             'res_model': 'account.asset',
+            'context': {**self.env.context, 'create': False},
             'view_id': False,
             'type': 'ir.actions.act_window',
             'domain': [('id', 'in', self.children_ids.ids)],
             'views': self.env['account.asset']._get_views(self.asset_type),
         }
+        if len(self.children_ids) == 1:
+            result['views'] = [(self.get_formview_id(), 'form')]
+            result['res_id'] = self.children_ids.id
+        return result
+
+    def open_parent_id(self):
+        result = {
+            'name': _('Parent Asset'),
+            'view_mode': 'form',
+            'res_model': 'account.asset',
+            'type': 'ir.actions.act_window',
+            'res_id': self.parent_id.id,
+            'views': [(self.get_formview_id(), 'form')],
+        }
+        return result
 
     def validate(self):
         fields = [

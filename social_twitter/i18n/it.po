@@ -90,7 +90,7 @@ msgstr "Si è verificato un errore (%s)"
 #: code:addons/social_twitter/controllers/main.py:0
 #, python-format
 msgid "Authentication failed. Please enter valid credentials."
-msgstr ""
+msgstr "Autenticazione non riuscita, inserire credenziali valide."
 
 #. module: social_twitter
 #. openerp-web
@@ -107,6 +107,8 @@ msgid ""
 "Can not like / unlike the tweet\n"
 "%s."
 msgstr ""
+"Impossibile mettere/togliere mi piace dal tweet\n"
+"%s."
 
 #. module: social_twitter
 #. odoo-javascript
@@ -195,12 +197,16 @@ msgid ""
 "Failed to delete the Tweet\n"
 "%s."
 msgstr ""
+"Errore nell'eliminazione del tweet\n"
+"%s."
 
 #. module: social_twitter
 #: code:addons/social_twitter/models/social_stream_post.py:0
 #, python-format
 msgid "Failed to fetch the conversation id: '%s' using the account %s."
 msgstr ""
+"Errore nel recupero dell'id della conversazione: \"%s\" utilizzando "
+"l'account %s."
 
 #. module: social_twitter
 #: code:addons/social_twitter/models/social_stream_post.py:0
@@ -208,12 +214,14 @@ msgstr ""
 msgid ""
 "Failed to fetch the tweets in the same thread: '%s' using the account %s."
 msgstr ""
+"Errore nel recupero dei tweet nella stessa discussione: \"%s\" utilizzando "
+"l'account %s."
 
 #. module: social_twitter
 #: code:addons/social_twitter/models/social_stream_post.py:0
 #, python-format
 msgid "Failed to post comment: %s with the account %s."
-msgstr ""
+msgstr "Errore nella pubblicazione del commento: %s con l'account %s."
 
 #. module: social_twitter
 #: model:social.stream.type,name:social_twitter.stream_type_twitter_likes
@@ -305,7 +313,7 @@ msgstr "Nome"
 #: code:addons/social_twitter/models/social_stream_post.py:0
 #, python-format
 msgid "Oops! Couldn't find this tweet on Twitter.com"
-msgstr ""
+msgstr "Ops! Non è stato possibile trovare il tweet su Twitter.com"
 
 #. module: social_twitter
 #: code:addons/social_twitter/models/social_stream.py:0
@@ -384,6 +392,8 @@ msgstr "Retweet"
 #, python-format
 msgid "Replies from Tweets older than 7 days must be accessed on Twitter.com"
 msgstr ""
+"Le risposte ai tweet più vecchi di 7 giorni devono essere accessibili su "
+"Twitter.com"
 
 #. module: social_twitter
 #: model:ir.model.fields,field_description:social_twitter.field_social_stream__twitter_searched_keyword
@@ -468,6 +478,13 @@ msgid ""
 msgstr ""
 "L'URL richiesto dal servizio ha restituito un errore, contattare l'autore "
 "dell'applicazione."
+
+#. module: social_twitter
+#. odoo-python
+#: code:addons/social_twitter/controllers/main.py:0
+#, python-format
+msgid "This Tweet has been deleted."
+msgstr "Questo tweet è stato eliminato."
 
 #. module: social_twitter
 #: model:social.stream.type,name:social_twitter.stream_type_twitter_follow

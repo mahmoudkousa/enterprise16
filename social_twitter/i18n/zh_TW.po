@@ -410,7 +410,7 @@ msgstr "社交媒體"
 #. module: social_twitter
 #: model:ir.model,name:social_twitter.model_social_post
 msgid "Social Post"
-msgstr ""
+msgstr "社交帖文"
 
 #. module: social_twitter
 #: model:ir.model,name:social_twitter.model_social_post_template
@@ -455,6 +455,13 @@ msgstr ""
 msgid ""
 "The url that this service requested returned an error. Please contact the "
 "author of the app."
+msgstr ""
+
+#. module: social_twitter
+#. odoo-python
+#: code:addons/social_twitter/controllers/main.py:0
+#, python-format
+msgid "This Tweet has been deleted."
 msgstr ""
 
 #. module: social_twitter
